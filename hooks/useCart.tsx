@@ -1,11 +1,14 @@
 "use client"
 import { CardProductProps } from "@/app/components/detail/DetailClient";
 import { products } from "@/utils/Products";
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 interface CartContextProps {
  productCartQty: number
+ cartPrdcts: CardProductProps[] | null
  addToBasket: (product: CardProductProps) => void;
+ removeFromCart: (product: CardProductProps) => void;
 }
 
 const CartContext = createContext<CartContextProps | null>(null);
@@ -18,22 +21,35 @@ export const CardContextProvider = (props: Props) => {
  const [productCartQty, setProductCartQty] = useState(0)
  const [cartPrdcts, setCartPrdcts] = useState<CardProductProps[] | null>(null)
 
+ useEffect(() => {
+  let getItem: any = localStorage.getItem('cart')
+  let getItemParse: CardProductProps[] | null = JSON.parse(getItem)
+  setCartPrdcts(getItemParse)
+ }, [])
+
  const addToBasket = useCallback((product: CardProductProps) => {
   setCartPrdcts(prev => {
    let updatedCart;
-    if(prev){
-     updatedCart = [...prev, product]
-    } else {
+   if (prev) {
+    updatedCart = [...prev, product]
+   } else {
     updatedCart = [product]
    }
+   toast.success('Ürün Sepete Eklendi...')
+   localStorage.setItem('cart', JSON.stringify(updatedCart))
    return updatedCart
   })
  }, [cartPrdcts])
 
+ const removeFromCart = useCallback((product: CardProductProps) => {
+
+ }, [])
+
  let value = {
   productCartQty,
   addToBasket,
-  cartPrdcts
+  cartPrdcts,
+  removeFromCart
  }
  return (
   <CartContext.Provider value={value} {...props} />

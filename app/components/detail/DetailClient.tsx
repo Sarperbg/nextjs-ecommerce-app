@@ -3,12 +3,13 @@
 import Image from "next/image";
 import PageContainer from "../containers/PageContainer";
 import Counter from "../general/Counter";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Rating } from "@mui/material";
 import Button from "../general/Button";
 import Comment from "./Comment";
 import Heading from "../general/Heading";
 import useCart from "@/hooks/useCart";
+import Head from "next/head";
 
 export type CardProductProps = {
  id: string,
@@ -18,12 +19,12 @@ export type CardProductProps = {
  quantity: number,
  image: string,
  stock: boolean
-
 }
 
 const DetailClient = ({ product }: { product: any }) => {
 
- const {productCartQty} = useCart();
+ const { productCartQty, addToBasket, cartPrdcts } = useCart();
+ const [displayButton, setDisplayButton] = useState(false);
 
  const [cardProduct, setCardProduct] = useState<CardProductProps>({
   id: product.id,
@@ -34,6 +35,15 @@ const DetailClient = ({ product }: { product: any }) => {
   image: product.image,
   stock: product.inStock
  })
+
+
+ useEffect(() => {
+  setDisplayButton(false)
+  let controlDisplay: any = cartPrdcts?.findIndex(cart => cart.id == product.id)
+  if (controlDisplay > -1) {
+   setDisplayButton(true)
+  }
+ }, [cartPrdcts])
 
  const increaseFunc = () => {
   if (cardProduct.quantity == 10) return
@@ -64,10 +74,19 @@ const DetailClient = ({ product }: { product: any }) => {
         product.inStock ? <div className="text-green-500">Ürün Stokta Mevcut</div> : <div className="text-red-500">Ürün Stokta Bulunmamaktadır</div>
        }
       </div>
-      <Counter increaseFunc={increaseFunc} decreaseFunc={decreaseFunc} cardProduct={cardProduct} />
+      {
+       displayButton ? <>
+        <Button text="Ürün Sepete Ekli" small outline onClick={() => {}} />
+       </> : <>
+        <Counter increaseFunc={increaseFunc} decreaseFunc={decreaseFunc} cardProduct={cardProduct} />
+        <Button text="Sepete Ekle" small onClick={() => addToBasket(cardProduct)} />
+       </>
+
+      }
       <div className="text-lg md:text-2xl text-orange-600 font-bold">{product.price} $</div>
      </div>
     </div>
+    <Heading text="Yorumlar" />
     <div>
      {
       product?.reviews?.map((prd: any) => (
